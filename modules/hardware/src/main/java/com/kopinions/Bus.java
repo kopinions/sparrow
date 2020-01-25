@@ -1,5 +1,6 @@
 package com.kopinions;
 
-public class CPU {
+public class Bus {
+
 
 }
