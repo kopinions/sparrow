@@ -1,16 +1,12 @@
 package com.kopinions;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kopinions.MMU.PTE;
 import com.kopinions.core.Bus;
 import com.kopinions.core.Data;
 import com.kopinions.core.Memory;
-import com.kopinions.core.Pageable;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class MMUTest {

@@ -4,8 +4,11 @@ import com.kopinions.core.Bus;
 import com.kopinions.core.Component;
 
 public class SimpleBus implements Bus {
-  public SimpleBus(int width) {
 
+  private int width;
+
+  public SimpleBus(int width) {
+    this.width = width;
   }
 
   @Override

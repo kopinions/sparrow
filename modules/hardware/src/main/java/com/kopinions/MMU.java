@@ -47,7 +47,7 @@ public class MMU implements Component {
   }
 
   public Data at(Address address) {
-    return new PlainData("");
+    return new Word((short) 0x00);
   }
 
   public Pageable<Data> find(Address address) {
