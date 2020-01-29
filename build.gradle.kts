@@ -5,6 +5,7 @@ plugins {
 }
 
 val junit_version: String  = "5.6.0"
+val mockito_version: String  = "2.21.0"
 
 allprojects {
     apply {
@@ -18,6 +19,7 @@ allprojects {
 
     dependencies {
         testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
+        testImplementation("org.mockito:mockito-core:$mockito_version")
     }
 
     tasks.test {
