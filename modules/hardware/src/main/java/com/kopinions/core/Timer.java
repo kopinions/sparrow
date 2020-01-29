@@ -1,4 +1,4 @@
-package com.kopinions;
+package com.kopinions.core;
 
 import java.util.Date;
 

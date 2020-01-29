@@ -1,7 +1,7 @@
 package com.kopinions;
 
 import com.kopinions.Interrupter.Type;
-import com.kopinions.Timer.Task;
+import com.kopinions.core.Timer;
 import java.util.Date;
 
 public class RTC {
