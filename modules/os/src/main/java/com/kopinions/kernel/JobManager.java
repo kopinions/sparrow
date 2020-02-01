@@ -1,5 +1,8 @@
 package com.kopinions.kernel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class JobManager {
 
   public Job load() {
@@ -14,8 +17,10 @@ public class JobManager {
 
   }
 
-  public void report(Reporter<String> reporter) {
-    reporter.report("Reported by the job manager");
+  public void report(Reporter<Map<String, Object>> reporter) {
+    reporter.report(new HashMap<String, Object>() {{
+      put("test", "test");
+    }});
   }
 
   public void select(Selector<Job> selector) {

@@ -1,24 +1,21 @@
 package com.kopinions;
 
+import static java.lang.Class.forName;
+
 import com.kopinions.core.BIOS;
 import com.kopinions.core.CPU;
-import com.kopinions.core.Disk.Section;
 import java.lang.reflect.InvocationTargetException;
 
 public class JarBIOS implements BIOS {
 
   @Override
-  public void powerup() {
+  public void poweron() {
     CPU cpu = new SISD();
     cpu.poweron();
     HDD hdd = new HDD();
-    Section zero = hdd.load(0);
-    // load jar
-    // thread run
     try {
-      Class<?> aClass = Class.forName("com.kopinions.boot.Bootmain");
-      Object o = aClass.getDeclaredConstructor().newInstance();
-      ((Runnable) o).run();
+      String bootClass = "com.kopinions.boot.Bootmain";
+      ((Runnable) forName(bootClass).getDeclaredConstructor().newInstance()).run();
     } catch (ClassNotFoundException | NoSuchMethodException e) {
       System.err.println("error in boot");
       System.exit(1);
@@ -29,6 +26,6 @@ public class JarBIOS implements BIOS {
   }
 
   public static void main(String[] args) {
-    new JarBIOS().powerup();
+    new JarBIOS().poweron();
   }
 }
