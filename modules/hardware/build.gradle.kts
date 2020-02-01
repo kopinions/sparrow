@@ -1,3 +1,3 @@
 dependencies {
-    compileOnly(project(":modules:os"))
+    implementation(project(":modules:os"))
 }
