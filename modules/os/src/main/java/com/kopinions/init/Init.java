@@ -3,10 +3,12 @@ package com.kopinions.init;
 import com.kopinions.apps.monitors.Monitor;
 import com.kopinions.apps.monitors.Monitor.JsonChangeSet;
 import com.kopinions.kernel.JobManager;
+import com.kopinions.kernel.Proc;
 import com.kopinions.kernel.ProcManager;
 import com.kopinions.kernel.Reporter;
-import java.util.HashMap;
+import com.kopinions.kernel.Selector;
 import java.util.Map;
+import java.util.Queue;
 
 public class Init implements Runnable {
 
@@ -20,7 +22,24 @@ public class Init implements Runnable {
     new Thread(target).start();
 
     JobManager jobManager = new JobManager();
-    ProcManager procManager = new ProcManager();
+    ProcManager procManager = new ProcManager(new Selector<Proc>() {
+      @Override
+      public Proc applied(Queue<Proc> jobs) {
+        return jobs.peek();
+      }
+    });
     jobManager.report(reporter);
+    new Thread(() -> {
+      while (true) {
+        if (procManager.current().scheduleNeeded()) {
+          try {
+            procManager.schedule();
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }).start();
   }
 }
