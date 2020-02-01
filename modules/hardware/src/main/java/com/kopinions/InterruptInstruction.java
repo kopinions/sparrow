@@ -6,12 +6,17 @@ import java.util.List;
 public class InterruptInstruction implements Instruction {
 
   @Override
-  public String operation() {
+  public Operation operation() {
     return null;
   }
 
   @Override
   public List<Operand> operands() {
     return null;
+  }
+
+  @Override
+  public int cycle() {
+    return 0;
   }
 }

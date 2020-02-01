@@ -7,7 +7,13 @@ public interface Instruction {
 
   }
 
-  String operation();
+  Operation operation();
 
   List<Operand> operands();
+
+  enum Operation {
+  SYSCALL, USER_MODE, IO
+  }
+
+  int cycle();
 }
