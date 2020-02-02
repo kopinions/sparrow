@@ -25,7 +25,10 @@ public class Init implements Runnable {
 
     JobManager jobManager = new JobManager();
     ProcManager procManager = new ProcManager(elements -> new ArrayList<>() {{
-      add(elements.peek());
+      Proc proc = elements.peek();
+      if (proc != null) {
+        add(proc);
+      }
     }});
     jobManager.report(reporter);
     new Thread(() -> {
