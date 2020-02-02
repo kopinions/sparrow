@@ -17,4 +17,9 @@ public class Word implements Data {
         (byte) ((raw << 8) >> 8)
     };
   }
+
+  @Override
+  public int size() {
+    return 2;
+  }
 }

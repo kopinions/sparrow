@@ -1,18 +1,13 @@
 package com.kopinions;
 
-import com.kopinions.core.Bus;
-import com.kopinions.core.Component;
 import com.kopinions.core.Data;
 import com.kopinions.core.Pageable;
+import java.util.List;
 
-public class MMU implements Component {
-  private Bus bus;
-  private PTE[] mapping;
+public class MMU {
+  private List<PTE> mapping;
 
-  public MMU(Bus bus, PTE[] mapping) {
-    this.bus = bus;
-    this.mapping = mapping;
-    this.bus.attach(this);
+  public MMU() {
   }
 
   public Address translate(Address va) {
@@ -29,38 +24,24 @@ public class MMU implements Component {
   }
 
   public PTE entry(Address va) {
-    return mapping[page(va)];
-  }
-
-  public void attached(Bus bus) {
-
-  }
-
-  @Override
-  public Data recv() {
-    return null;
-  }
-
-  @Override
-  public void send(Data data) {
-
-  }
-
-  public Data at(Address address) {
-    return new Word((short) 0x00);
+    return mapping.get(page(va));
   }
 
   public Pageable<Data> find(Address address) {
     return null;
   }
 
+  public void update(List<PTE> ptes) {
+    mapping = ptes;
+  }
+
   public static class PTE {
     boolean valid;
-    int ppn;
+    short ppn;
 
-    public PTE(boolean valid, int ppn) {
-      this.valid = valid;
-      this.ppn = ppn;
+    public PTE(short value) {
+      this.valid = (value & 0x8000)>0;
+      this.ppn = (short) (value & ((1<<12)-1));
     }
   }
 }

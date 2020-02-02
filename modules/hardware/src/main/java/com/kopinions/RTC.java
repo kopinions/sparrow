@@ -1,15 +1,16 @@
 package com.kopinions;
 
-import com.kopinions.Interrupter.Type;
+import com.kopinions.core.CPU;
+import com.kopinions.core.CPU.Interrupter.Type;
 import com.kopinions.core.Timer;
 import java.util.Date;
 
 public class RTC {
 
   private Timer timer;
-  private Interrupter interrupter;
+  private CPU.Interrupter interrupter;
 
-  public RTC(Timer timer, Interrupter interrupter) {
+  public RTC(Timer timer, CPU.Interrupter interrupter) {
     this.timer = timer;
     this.interrupter = interrupter;
   }

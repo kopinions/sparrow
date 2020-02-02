@@ -1,6 +1,5 @@
 package com.kopinions.core;
 
-public interface Decoder {
-
-  Instruction decode(Data inst);
+public interface Decoder<T> {
+  Instruction decode(T inst);
 }

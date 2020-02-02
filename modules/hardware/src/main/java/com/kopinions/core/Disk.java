@@ -1,6 +1,6 @@
 package com.kopinions.core;
 
-public interface Disk {
+public interface Disk extends Component {
 
   Section load(int i);
 

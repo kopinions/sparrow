@@ -22,18 +22,16 @@ public class Proc implements Comparable<Proc> {
     ZOMBIE,      // almost dead, and wait parent proc to reclaim his resource
   }
 
-  static class Context {
-
-    short eip;
-    short esp;
-    short ebx;
-    short ecx;
-    short edx;
-    short esi;
-    short edi;
-    short ebp;
+  class Context {
+    public short eip;
+    public short esp;
+    public short ebx;
+    public short ecx;
+    public short edx;
+    public short esi;
+    public short edi;
+    public short ebp;
   }
-
   State state;
   int pid;
   int runs;

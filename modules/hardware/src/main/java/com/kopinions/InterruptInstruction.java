@@ -1,5 +1,6 @@
 package com.kopinions;
 
+import com.kopinions.core.CPU;
 import com.kopinions.core.Instruction;
 import java.util.List;
 
@@ -18,5 +19,10 @@ public class InterruptInstruction implements Instruction {
   @Override
   public int cycle() {
     return 0;
+  }
+
+  @Override
+  public void applied(CPU cpu) {
+
   }
 }

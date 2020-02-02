@@ -1,7 +1,5 @@
 package com.kopinions;
 
-import java.util.Objects;
-
 public class Address {
 
   int addr;
@@ -31,5 +29,19 @@ public class Address {
     }
     Address address = (Address) o;
     return addr == address.addr;
+  }
+
+  public static class Range {
+    int start;
+    int end;
+
+    public Range(int start, int end) {
+      this.start = start;
+      this.end = end;
+    }
+
+    boolean contains(Address address) {
+      return address.addr >= start && address.addr <= end;
+    }
   }
 }

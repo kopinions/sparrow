@@ -10,9 +10,9 @@ class DRAMTest {
 
   @Test
   public void should_able_to_fetch_content_from_memory() {
-    Memory dram = new DRAM(32*1024, new SimpleBus(16));
+    Memory dram = new DRAM(32*1024);
     dram.memset(0, 32 * 1024, (byte) 0xFF);
-    Data data = dram.at(new Address(0x0000));
+    Data data = dram.read(new Address(0x0000));
     byte[] binary = data.binary();
     assertEquals(binary.length, 2);
     assertEquals(binary[0], (byte)0xFF);
