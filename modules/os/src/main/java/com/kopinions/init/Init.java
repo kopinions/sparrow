@@ -7,6 +7,8 @@ import com.kopinions.kernel.Proc;
 import com.kopinions.kernel.ProcManager;
 import com.kopinions.kernel.Reporter;
 import com.kopinions.kernel.Selector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -22,12 +24,9 @@ public class Init implements Runnable {
     new Thread(target).start();
 
     JobManager jobManager = new JobManager();
-    ProcManager procManager = new ProcManager(new Selector<Proc>() {
-      @Override
-      public Proc applied(Queue<Proc> jobs) {
-        return jobs.peek();
-      }
-    });
+    ProcManager procManager = new ProcManager(elements -> new ArrayList<>() {{
+      add(elements.peek());
+    }});
     jobManager.report(reporter);
     new Thread(() -> {
       while (true) {

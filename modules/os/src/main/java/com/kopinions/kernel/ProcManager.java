@@ -55,7 +55,7 @@ public class ProcManager {
   }
 
   private Proc select(Selector<Proc> selector) {
-    return selector.applied(running);
+    return selector.applied(running).stream().findFirst().orElse(null);
   }
 
   public synchronized void schedule() {

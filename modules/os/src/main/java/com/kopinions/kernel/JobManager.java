@@ -1,12 +1,29 @@
 package com.kopinions.kernel;
 
+import static java.util.Arrays.stream;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 public class JobManager {
 
-  public Job load() {
-    return null;
+  static Generator<Integer> generator = new IdGenerator();
+  Queue<Job> jobs;
+
+  public JobManager() {
+    this.jobs = new LinkedBlockingQueue<>();
+  }
+
+  public Job load(String s) {
+    Job job = new Job(generator.generate());
+    String[] insts = s.split("\n");
+    job.instructions = stream(insts).map(Short::valueOf).collect(Collectors.toList());
+    jobs.add(job);
+    return job;
   }
 
   public Job id(int id) {
@@ -23,7 +40,11 @@ public class JobManager {
     }});
   }
 
-  public void select(Selector<Job> selector) {
+  public Job single(Selector<Job> selector) {
+    return selector.applied(jobs).stream().findFirst().orElse(null);
+  }
 
+  public List<Job> select(Selector<Job> selector) {
+    return selector.applied(jobs);
   }
 }
