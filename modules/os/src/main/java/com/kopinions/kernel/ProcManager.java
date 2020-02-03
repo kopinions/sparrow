@@ -1,6 +1,5 @@
 package com.kopinions.kernel;
 
-import com.kopinions.kernel.Proc.State;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -22,7 +21,7 @@ public class ProcManager {
     current = idle;
   }
 
-  Proc create() {
+  Proc create(Job job) {
     return null;
   }
 

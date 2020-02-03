@@ -6,6 +6,7 @@ plugins {
 
 val junit_version: String  = "5.6.0"
 val mockito_version: String  = "2.21.0"
+val hamcrest_version: String  = "2.2"
 
 allprojects {
     apply {
@@ -20,6 +21,7 @@ allprojects {
     dependencies {
         testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
         testImplementation("org.mockito:mockito-core:$mockito_version")
+        testImplementation ("org.hamcrest:hamcrest:$hamcrest_version")
     }
 
     tasks.test {

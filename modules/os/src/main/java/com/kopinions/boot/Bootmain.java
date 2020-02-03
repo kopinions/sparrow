@@ -1,21 +1,24 @@
 package com.kopinions.boot;
 
-import com.kopinions.core.CPU.Interrupter;
+import com.kopinions.core.CPU;
+import com.kopinions.core.Disk;
 import com.kopinions.core.Memory;
 import com.kopinions.init.Init;
 
 public class Bootmain implements Runnable {
 
+  private final Disk disk;
   private Memory memory;
-  private Interrupter interrupter;
+  private CPU cpu;
 
-  public Bootmain(Memory memory, Interrupter interrupter) {
+  public Bootmain(CPU cpu, Memory memory, Disk disk) {
     this.memory = memory;
-    this.interrupter = interrupter;
+    this.disk = disk;
+    this.cpu = cpu;
   }
 
   @Override
   public void run() {
-    new Init(memory, interrupter).run();
+    new Init(cpu, memory, disk).run();
   }
 }

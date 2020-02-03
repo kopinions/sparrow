@@ -7,6 +7,7 @@ import com.kopinions.core.CPU.Interrupter.Type;
 import com.kopinions.core.BIOS;
 import com.kopinions.core.Bus;
 import com.kopinions.core.CPU;
+import com.kopinions.core.Disk;
 import com.kopinions.core.Memory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -18,6 +19,7 @@ public class JarBIOS implements BIOS {
   private final Bus bus;
   private final Memory mem;
   private final Interrupter interrupter;
+  private Disk disk;
 
   public JarBIOS() {
     bus = new SimpleBus(16);
@@ -28,8 +30,8 @@ public class JarBIOS implements BIOS {
       interrupter.interrupt(Type.RTC);
     }, new Date(), 1000);
     cpu.poweron();
-    HDD hdd = HDD.from("hdd.dat");
-    bus.attach(hdd);
+    disk = HDD.from("hdd.dat");
+    bus.attach(disk);
     mem = new DRAM(32 * 1024);
     bus.attach(mem);
   }
@@ -49,8 +51,8 @@ public class JarBIOS implements BIOS {
     try {
       String bootClass = "com.kopinions.boot.Bootmain";
       Constructor<?> constructor = forName(bootClass)
-          .getDeclaredConstructor(Memory.class, Interrupter.class);
-      ((Runnable) constructor.newInstance(mem, interrupter)).run();
+          .getDeclaredConstructor(CPU.class, Memory.class, Disk.class);
+      ((Runnable) constructor.newInstance(cpu, mem, disk)).run();
     } catch (ClassNotFoundException | NoSuchMethodException e) {
       System.err.println("error in boot");
       System.exit(1);

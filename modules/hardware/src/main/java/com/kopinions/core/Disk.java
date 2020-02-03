@@ -1,10 +1,7 @@
 package com.kopinions.core;
 
 public interface Disk extends Component {
+  short read(int address);
 
-  Section load(int i);
-
-  class Section {
-
-  }
+  void write(int address, short data);
 }
