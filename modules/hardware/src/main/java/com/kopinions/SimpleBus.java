@@ -24,8 +24,7 @@ public class SimpleBus implements Bus {
 
   @Override
   public short read(Address pa) {
-    byte[] binary = matched(pa).read(pa).binary();
-    return (short) (((binary[0] & 0xFF) << 8) | (binary[1] & 0xFF));
+    return matched(pa).read(pa);
   }
 
   private Component matched(Address address) {
@@ -35,6 +34,6 @@ public class SimpleBus implements Bus {
 
   @Override
   public void write(Address pa, short data) {
-    matched(pa).write(pa, new Word(data));
+    matched(pa).write(pa, data);
   }
 }

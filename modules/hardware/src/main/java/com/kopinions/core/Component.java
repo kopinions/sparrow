@@ -6,9 +6,9 @@ public interface Component {
 
   void attached(Bus bus);
 
-  Data read(Address pa);
+  short read(Address pa);
 
-  void write(Address address, Data data);
+  void write(Address address, short data);
 
   Address.Range range();
 }
