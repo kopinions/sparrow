@@ -1,13 +1,13 @@
 package com.kopinions.kernel;
 
 import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
 
 public class JobManager {
 
@@ -21,7 +21,7 @@ public class JobManager {
   public Job load(String s) {
     Job job = new Job(generator.generate());
     String[] insts = s.split("\n");
-    job.instructions = stream(insts).map(Short::valueOf).collect(Collectors.toList());
+    job.instructions = stream(insts).map(Short::valueOf).collect(toList());
     jobs.add(job);
     return job;
   }

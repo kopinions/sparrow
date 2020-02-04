@@ -1,5 +1,6 @@
 package com.kopinions;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 import com.kopinions.MMU.PTE;
@@ -12,6 +13,7 @@ import com.kopinions.core.Timer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 // Single Instruction Single Data
@@ -50,7 +52,7 @@ public class SISD implements CPU {
 
       @Override
       public void interrupt(Type type) {
-        isrs.get(type).run();
+        ofNullable(isrs.get(type)).ifPresent(Runnable::run);
       }
 
       @Override

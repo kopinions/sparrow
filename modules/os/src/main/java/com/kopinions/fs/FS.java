@@ -4,6 +4,8 @@ import com.kopinions.fs.FS.File.Operation;
 
 public interface FS {
 
+  File root();
+
   interface Operations {
 
     Operation<byte[]> read(int size);
