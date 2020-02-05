@@ -30,7 +30,7 @@ public class JarBIOS implements BIOS {
       interrupter.interrupt(Type.RTC);
     }, new Date(), 1000);
     cpu.poweron();
-    disk = HDD.from("hdd.dat");
+    disk = HDD.from("hdd.img");
     bus.attach(disk);
     mem = new DRAM(32 * 1024);
     bus.attach(mem);

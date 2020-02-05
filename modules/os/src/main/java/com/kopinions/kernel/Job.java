@@ -8,7 +8,7 @@ public class Job {
   String owner;
   int id;
   int process;
-
+  int location;
   int loaded;
   int startedAt;
   short addr;
