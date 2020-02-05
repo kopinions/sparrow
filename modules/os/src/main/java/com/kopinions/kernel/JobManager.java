@@ -1,8 +1,9 @@
 package com.kopinions.kernel;
 
-import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +19,14 @@ public class JobManager {
     this.jobs = new LinkedBlockingQueue<>();
   }
 
-  public Job load(String s) {
+  public Job create(int location, int size, byte[] jobdata) {
     Job job = new Job(generator.generate());
-    String[] insts = s.split("\n");
-    job.instructions = stream(insts).map(Short::valueOf).collect(toList());
+    job.location = location;
+    job.size = size;
+    ByteBuffer jobBufer = ByteBuffer.wrap(jobdata);
+    job.instructions = range(0, (size - 8) / 2).mapToObj(i -> jobBufer.getShort(8 + i * 2)).peek(
+        System.out::println)
+        .collect(toList());
     jobs.add(job);
     return job;
   }
@@ -33,7 +38,6 @@ public class JobManager {
   public void unload(int id) {
 
   }
-
 
 
   public void report(Reporter<Map<String, Object>> reporter) {

@@ -9,6 +9,7 @@ public class Job {
   int id;
   int process;
   int location;
+  int size;
   int loaded;
   int startedAt;
   short addr;

@@ -7,8 +7,8 @@ import com.kopinions.core.CPU.Interrupter;
 import com.kopinions.core.CPU.Interrupter.Type;
 import com.kopinions.core.Disk;
 import com.kopinions.core.Memory;
-import com.kopinions.fs.FS.File;
 import com.kopinions.fs.DevHDD;
+import com.kopinions.fs.FS.File;
 import com.kopinions.kernel.JobManager;
 import com.kopinions.kernel.Kernel;
 import com.kopinions.kernel.Proc;
@@ -58,27 +58,18 @@ public class Init implements Runnable {
     DevHDD hdd = new DevHDD(disk);
     File open = hdd.open(Kernel.HDD_SWAP_SIZE + Kernel.HDD_SYS_SIZE);
     byte[] read = open.read(512);
+    ByteBuffer readdata = ByteBuffer.wrap(read);
     int location;
     int size;
     for (int i = 0; i < 64; i++) {
-      ByteBuffer byteBuffer = ByteBuffer
-          .wrap(new byte[]{
-              read[i * 8],
-              read[i * 8 + 1],
-              read[i * 8 + 2],
-              read[i * 8 + 3],
-              read[i * 8 + 4],
-              read[i * 8 + 5],
-              read[i * 8 + 6],
-              read[i * 8 + 7]});
-      location = byteBuffer.getInt(0);
-      size = byteBuffer.getInt(1);
+      location = readdata.getInt(0);
+      size = readdata.getInt(4);
       if (location == 0 || size == 0) {
         continue;
       }
       File job = hdd.open(location);
       byte[] jobdata = job.read(size);
-      jobManager.load(ByteBuffer.wrap(jobdata).toString());
+      jobManager.create(location, size, jobdata);
     }
     ProcManager procManager = new ProcManager(elements -> new ArrayList<>() {{
       Proc proc = elements.peek();

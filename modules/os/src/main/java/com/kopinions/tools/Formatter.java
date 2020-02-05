@@ -31,7 +31,7 @@ public class Formatter {
     Arrays.fill(zero, (byte) 0);
     ByteBuffer image = ByteBuffer.wrap(zero);
     for (int i = 0; i < 64; i++) {
-      int jobPosition = Kernel.HDD_FS_ROOT + i * Kernel.PAGE_SIZE;
+      int jobPosition = Kernel.HDD_FS_ROOT + (i+1) * Kernel.PAGE_SIZE;
       int jobSize = Kernel.PAGE_SIZE;
       image.putInt(Kernel.HDD_FS_ROOT + i * 8, jobPosition);
       image.putInt(Kernel.HDD_FS_ROOT + i * 8 + 4, jobSize);

@@ -5,6 +5,10 @@ import static java.nio.ByteBuffer.wrap;
 import com.kopinions.Address.Range;
 import com.kopinions.core.Bus;
 import com.kopinions.core.Disk;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 
 public class HDD implements Disk {
@@ -13,7 +17,15 @@ public class HDD implements Disk {
   private byte[] cells;
 
   public static HDD from(String img) {
-    return new HDD(1024 * 1024);
+    HDD hdd = new HDD(1024 * 1024);
+    URL resource = hdd.getClass().getClassLoader().getResource(img);
+    try {
+      FileInputStream fileInputStream = new FileInputStream(new java.io.File(resource.toURI()));
+      hdd.cells = fileInputStream.readAllBytes();
+    } catch (URISyntaxException | IOException e) {
+      e.printStackTrace();
+    }
+    return hdd;
   }
 
   public HDD(int size) {
