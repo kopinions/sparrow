@@ -24,8 +24,8 @@ public class JobManager {
     job.location = location;
     job.size = size;
     ByteBuffer jobBufer = ByteBuffer.wrap(jobdata);
-    job.instructions = range(0, (size - 8) / 2).mapToObj(i -> jobBufer.getShort(8 + i * 2)).peek(
-        System.out::println)
+    job.instructions = range(0, (size - 8) / 2)
+        .mapToObj(i -> jobBufer.getShort(8 + i * 2))
         .collect(toList());
     jobs.add(job);
     return job;

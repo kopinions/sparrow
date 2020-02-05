@@ -22,7 +22,7 @@ class RTCTest {
   public void should_able_to_interrupt_every_one_second() {
     CPU.Interrupter interrupter = mock(CPU.Interrupter.class);
     RTC rtc = new RTC(new TestableTimer(), interrupter);
-    rtc.start();
+    rtc.poweron();
     verify(interrupter).interrupt(eq(Type.RTC));
   }
 }

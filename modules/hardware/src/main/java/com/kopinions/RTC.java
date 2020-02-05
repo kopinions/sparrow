@@ -15,7 +15,7 @@ public class RTC {
     this.interrupter = interrupter;
   }
 
-  public void start() {
+  public void poweron() {
     timer.schedule(() -> interrupter.interrupt(Type.RTC), new Date(), 1000);
   }
 }

@@ -3,7 +3,6 @@ package com.kopinions;
 import static java.lang.Class.forName;
 
 import com.kopinions.core.CPU.Interrupter;
-import com.kopinions.core.CPU.Interrupter.Type;
 import com.kopinions.core.BIOS;
 import com.kopinions.core.Bus;
 import com.kopinions.core.CPU;
@@ -11,7 +10,6 @@ import com.kopinions.core.Disk;
 import com.kopinions.core.Memory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Date;
 
 public class JarBIOS implements BIOS {
 
@@ -20,16 +18,16 @@ public class JarBIOS implements BIOS {
   private final Memory mem;
   private final Interrupter interrupter;
   private Disk disk;
+  private final RTC rtc;
 
   public JarBIOS() {
     bus = new SimpleBus(16);
     MMU mmu = new MMU();
     cpu = new SISD(mmu, bus);
     interrupter = cpu.interrupter();
-    new Oscillator().schedule(() -> {
-      interrupter.interrupt(Type.RTC);
-    }, new Date(), 1000);
+    rtc = new RTC(new Oscillator(), cpu.interrupter());
     cpu.poweron();
+    rtc.poweron();
     disk = HDD.from("hdd.img");
     bus.attach(disk);
     mem = new DRAM(32 * 1024);
