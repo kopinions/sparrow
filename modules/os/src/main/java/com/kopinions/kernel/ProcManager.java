@@ -1,6 +1,9 @@
 package com.kopinions.kernel;
 
 import com.kopinions.kernel.Proc.State;
+import com.kopinions.mm.PMM;
+import com.kopinions.mm.Page;
+import com.kopinions.mm.PageBasePMM;
 import com.kopinions.mm.PageBasedVMM;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -33,9 +36,9 @@ public class ProcManager {
     proc.state = State.CREATED;
     proc.priority = job.priority;
     created.add(proc);
-
-
-    PageBasedVMM pageBasedVMM = new PageBasedVMM();
+    PMM instance = PageBasePMM.instance(Kernel.MEM_USERSPACE_SIZE, Kernel.PAGE_SIZE);
+    Page alloc = instance.alloc();
+    PageBasedVMM pageBasedVMM = new PageBasedVMM(alloc.pa());
     proc.vmm = pageBasedVMM;
 
     // create pdt for the current process

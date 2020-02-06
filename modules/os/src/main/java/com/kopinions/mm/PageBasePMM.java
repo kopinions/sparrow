@@ -5,19 +5,21 @@ import static com.kopinions.mm.Page.Status.USING;
 import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toList;
 
+import com.kopinions.kernel.Kernel;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class PageBasePMM implements PMM {
 
+  private static PMM pmm = null;
   private final int size;
   private final int pagesize;
   List<Page> pages;
 
-  public PageBasePMM(int size, int pagesize) {
+  protected PageBasePMM(int size, int pagesize) {
     this.size = size;
     this.pagesize = pagesize;
-    pages = IntStream.range(0, size / pagesize).mapToObj(Page::new).collect(toList());
+    pages = IntStream.range(0, size / pagesize).mapToObj(zone_num -> new Page(zone_num, this)).collect(toList());
   }
 
   @Override
@@ -54,5 +56,28 @@ public class PageBasePMM implements PMM {
   @Override
   public int available() {
     return toIntExact(pages.stream().filter(p -> p.is(FREE)).count());
+  }
+
+  @Override
+  public int ppn(Page page) {
+    return pages.indexOf(page);
+  }
+
+  @Override
+  public Page from(short la) {
+    short ppn = (short) ((la & 0x3FFF) >> 9);
+    return pages.get(ppn);
+  }
+
+  @Override
+  public int start() {
+    return Kernel.MEM_USERSPACE_SIZE;
+  }
+
+  public static synchronized PMM instance(int size, int pagesize) {
+    if (pmm == null) {
+      pmm = new PageBasePMM(size, pagesize);
+    }
+    return pmm;
   }
 }

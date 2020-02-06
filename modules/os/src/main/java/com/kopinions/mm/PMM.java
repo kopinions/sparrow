@@ -13,4 +13,10 @@ public interface PMM {
   void free(Page page);
 
   int available();
+
+  int ppn(Page page);
+
+  Page from(short la);
+
+  int start();
 }
