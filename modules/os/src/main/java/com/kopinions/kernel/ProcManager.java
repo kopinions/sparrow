@@ -1,20 +1,27 @@
 package com.kopinions.kernel;
 
+import com.kopinions.kernel.Proc.State;
+import com.kopinions.mm.PageBasedVMM;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class ProcManager {
 
-  private Queue<Proc> waiting;
+  private Queue<Proc> ready;
+  private Queue<Proc> created;
   private Queue<Proc> running;
+  private Queue<Proc> blocked;
   static Proc current;
   static Proc idle;
   private Selector<Proc> selector;
+  private static Generator<Integer> ids = new IdGenerator();
 
   public ProcManager(Selector<Proc> procSelector) {
     selector = procSelector;
+    this.created = new PriorityQueue<>();
+    this.ready = new PriorityQueue<>();
     this.running = new PriorityQueue<>();
-    this.waiting = new PriorityQueue<>();
+    this.blocked = new PriorityQueue<>();
     idle = new Proc(0);
     idle.need_resched = true;
     idle.awakened();
@@ -22,7 +29,19 @@ public class ProcManager {
   }
 
   Proc create(Job job) {
-    return null;
+    Proc proc = new Proc(ids.generate());
+    proc.state = State.CREATED;
+    proc.priority = job.priority;
+    created.add(proc);
+
+
+    PageBasedVMM pageBasedVMM = new PageBasedVMM();
+    proc.vmm = pageBasedVMM;
+
+    // create pdt for the current process
+    // create vmm for current process
+    // create swap manager for current process
+    return proc;
   }
 
   void kill(Proc proc) {
@@ -60,7 +79,7 @@ public class ProcManager {
   public synchronized void schedule() {
     Proc next;
     current.need_resched = false;
-    if (current.state == Proc.State.RUNNABLE) {
+    if (current.state == Proc.State.RUNNING) {
       if (current != idle) {
         running.add(current);
       }

@@ -16,13 +16,15 @@ public class Proc implements Comparable<Proc> {
   }
 
   enum State {
-    CREATED,  // uninitialized
-    SLEEPING,    // sleeping
-    RUNNABLE,    // runnable(maybe running)
-    ZOMBIE,      // almost dead, and wait parent proc to reclaim his resource
+    CREATED,
+    READY,
+    RUNNING,
+    BLOCKED,
+    TERMINATED,
   }
 
   class Context {
+
     public short eip;
     public short esp;
     public short ebx;
@@ -32,6 +34,7 @@ public class Proc implements Comparable<Proc> {
     public short edi;
     public short ebp;
   }
+
   State state;
   int pid;
   int runs;
@@ -47,19 +50,20 @@ public class Proc implements Comparable<Proc> {
   Proc(int pid) {
     this.pid = pid;
     need_resched = false;
-    state = State.CREATED;
+    state = State.READY;
     priority = 1;
+    runs = 0;
   }
 
   void killed() {
   }
 
   void blocked() {
-    this.state = State.SLEEPING;
+    this.state = State.BLOCKED;
   }
 
   void awakened() {
-    this.state = State.RUNNABLE;
+    this.state = State.RUNNING;
   }
 
   @Override

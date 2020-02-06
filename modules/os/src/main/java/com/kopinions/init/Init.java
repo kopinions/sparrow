@@ -91,6 +91,6 @@ public class Init implements Runnable {
       }
     }).start();
 
-    PMM pmm = new PageBasePMM();
+    PMM pmm = new PageBasePMM(Kernel.MEM_USERSPACE_SIZE, Kernel.PAGE_SIZE);
   }
 }

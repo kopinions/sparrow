@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class Job {
 
+  int priority;
   String owner;
   int id;
   int process;
@@ -20,6 +21,7 @@ public class Job {
   public Job(int id) {
     this.id = id;
     owner = "user";
+    priority = 1;
   }
 
   public List<Short> instructions() {
