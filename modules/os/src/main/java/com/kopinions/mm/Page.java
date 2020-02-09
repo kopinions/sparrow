@@ -1,9 +1,20 @@
 package com.kopinions.mm;
 
+import com.kopinions.Address;
 import com.kopinions.kernel.Kernel;
 import java.util.Objects;
 
 public class Page {
+
+  private byte[] data;
+
+  public void setData(byte[] data) {
+    this.data = data;
+  }
+
+  public int pra_vaddr() {
+    return 0;
+  }
 
   enum Status {
     USING,
@@ -49,5 +60,38 @@ public class Page {
   @Override
   public int hashCode() {
     return Objects.hash(index);
+  }
+
+  public byte[] data() {
+    return data;
+  }
+
+  public static class PageDirectory {
+
+    private PMM pmm;
+
+    public PageDirectory(PMM pmm) {
+      this.pmm = pmm;
+    }
+
+    public static class PageDirectoryEntry {
+
+    }
+
+    public Page alloc(Address address) {
+      Page alloc = pmm.alloc();
+      // add page table entry to the page directory
+      return alloc;
+    }
+  }
+
+  public static class PageTable {
+    public static class PageTableEntry {
+
+    }
+
+    PageTable from(Address address) {
+      return null;
+    }
   }
 }

@@ -5,18 +5,20 @@ import static com.kopinions.mm.Page.Status.USING;
 import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toList;
 
+import com.kopinions.Address;
 import com.kopinions.kernel.Kernel;
+import com.kopinions.mm.Page.PageDirectory;
+import com.kopinions.mm.Page.PageTable.PageTableEntry;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class PageBasePMM implements PMM {
 
-  private static PMM pmm = null;
   private final int size;
   private final int pagesize;
   List<Page> pages;
 
-  protected PageBasePMM(int size, int pagesize) {
+  public PageBasePMM(int size, int pagesize) {
     this.size = size;
     this.pagesize = pagesize;
     pages = IntStream.range(0, size / pagesize).mapToObj(zone_num -> new Page(zone_num, this)).collect(toList());
@@ -74,10 +76,13 @@ public class PageBasePMM implements PMM {
     return Kernel.MEM_USERSPACE_SIZE;
   }
 
-  public static synchronized PMM instance(int size, int pagesize) {
-    if (pmm == null) {
-      pmm = new PageBasePMM(size, pagesize);
-    }
-    return pmm;
+  @Override
+  public PageTableEntry pde(Address pgdir, short la) {
+    return null;
+  }
+
+  @Override
+  public PageTableEntry pte(PageDirectory pgdir, Address addr) {
+    return null;
   }
 }

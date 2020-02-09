@@ -1,14 +1,28 @@
 package com.kopinions.mm;
 
-public class PageBasedVMM implements VMM {
-  int pgdir;
+import com.kopinions.Address;
+import com.kopinions.kernel.SwapManager;
+import com.kopinions.mm.Page.PageDirectory;
 
-  public PageBasedVMM(int pgdir) {
+public class PageBasedVMM implements VMM {
+
+  private SwapManager sm;
+  int pgdir;
+  private PMM pmm;
+
+  public PageBasedVMM(PMM pmm, SwapManager sm, int pgdir) {
+    this.pmm = pmm;
+    this.sm = sm;
     this.pgdir = pgdir;
   }
 
   @Override
-  public void pgfault() {
+  public PageDirectory pgdir() {
+    return new PageDirectory(pmm);
+  }
+
+  @Override
+  public void pgfault(Address va) {
 
   }
 }

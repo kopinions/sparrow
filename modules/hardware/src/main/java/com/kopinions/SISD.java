@@ -6,14 +6,14 @@ import static java.util.stream.Collectors.toList;
 import com.kopinions.MMU.PTE;
 import com.kopinions.core.Bus;
 import com.kopinions.core.CPU;
-import com.kopinions.core.CPU.Interrupter.Type;
 import com.kopinions.core.Decoder;
 import com.kopinions.core.Instruction;
-import com.kopinions.core.Timer;
+import com.kopinions.core.Registry;
+import com.kopinions.core.Registry.Name;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 // Single Instruction Single Data
@@ -27,15 +27,52 @@ public class SISD implements CPU {
   short esi;
   short edi;
   short ebp;
-  short cr3;
+  private short cr3;
   Decoder<Short> decoder;
   MMU mmu;
   private Bus bus;
+  private Interrupter interrupter;
+  private Registry registry;
 
 
-  public SISD(MMU mmu, Bus bus) {
-    this.mmu = mmu;
+  public SISD(Bus bus) {
+    this.mmu = new MMU(this, bus);
+    this.mmu.bus = bus;
+    this.mmu.cpu = this;
     this.bus = bus;
+    interrupter = new Interrupter() {
+      private Map<Type, List<Runnable>> isrs = new HashMap<>();
+
+      @Override
+      public void interrupt(Type type) {
+        ofNullable(isrs.get(type)).ifPresent(i -> i.forEach(Runnable::run));
+      }
+
+      @Override
+      public void on(Type type, Runnable isr) {
+        List<Runnable> v = isrs.getOrDefault(type, new ArrayList<>());
+        v.add(isr);
+        isrs.put(type, v);
+      }
+    };
+    registry = new Registry() {
+      Map<Name, Short> registry = new HashMap<>() {{
+        put(Name.CR1, (short) 0);
+        put(Name.CR2, (short) 0);
+        put(Name.CR3, (short) 0);
+        put(Name.EIP, (short) 0);
+      }};
+
+      @Override
+      public synchronized short get(Name name) {
+        return registry.get(name);
+      }
+
+      @Override
+      public synchronized void set(Name name, short value) {
+        registry.put(name, value);
+      }
+    };
   }
 
   @Override
@@ -47,26 +84,10 @@ public class SISD implements CPU {
 
   @Override
   public Interrupter interrupter() {
-    return new Interrupter() {
-      private Map<Type, Runnable> isrs = new HashMap<>();
-
-      @Override
-      public void interrupt(Type type) {
-        ofNullable(isrs.get(type)).ifPresent(Runnable::run);
-      }
-
-      @Override
-      public void on(Type type, Runnable isr) {
-        isrs.put(type, isr);
-      }
-    };
+    return interrupter;
   }
 
   private short fetch() {
-    List<PTE> ptes = IntStream.range(0, 128).mapToObj(i -> bus.read(new Address(cr3 + i * 2)))
-        .map(PTE::new)
-        .collect(toList());
-    mmu.update(ptes);
     Address translate = mmu.translate(new Address(eip));
     this.eip += 2;
     return bus.read(translate);
@@ -75,16 +96,22 @@ public class SISD implements CPU {
 
   @Override
   public void execute(Instruction instruction) {
-    List<PTE> ptes = IntStream.range(0, 128).mapToObj(i -> bus.read(new Address(cr3 + i * 2)))
-        .map(PTE::new)
-        .collect(toList());
-    mmu.update(ptes);
     instruction.applied(this);
   }
 
   @Override
   public void poweron() {
     eip = (short) 0;
+  }
+
+  @Override
+  public MMU mmu() {
+    return mmu;
+  }
+
+  @Override
+  public Registry registry() {
+    return registry;
   }
 
 }

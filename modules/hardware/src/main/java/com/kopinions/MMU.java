@@ -1,16 +1,34 @@
 package com.kopinions;
 
+import static java.util.stream.Collectors.toList;
+
+import com.kopinions.core.Bus;
+import com.kopinions.core.CPU;
 import com.kopinions.core.Data;
 import com.kopinions.core.Pageable;
+import com.kopinions.core.Registry.Name;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class MMU {
+
+  public CPU cpu;
+  public Bus bus;
   private List<PTE> mapping;
 
-  public MMU() {
+  public MMU(CPU cpu, Bus bus) {
+    this.cpu = cpu;
+    this.bus = bus;
+    mapping = new ArrayList<>();
   }
 
-  public Address translate(Address va) {
+  public synchronized Address translate(Address va) {
+    this.mapping = IntStream.range(0, 128).mapToObj(
+        i -> bus.read(new Address(cpu.registry().get(Name.CR3) + i * 2)))
+        .map(PTE::new)
+        .collect(toList());
+
     PTE entry = entry(va);
     return new Address((entry.ppn << 9) + offset(va));
   }
@@ -24,7 +42,12 @@ public class MMU {
   }
 
   public PTE entry(Address va) {
-    return mapping.get(page(va));
+    int page = page(va);
+    if (page < mapping.size()) {
+      return mapping.get(page);
+    } else {
+      return null;
+    }
   }
 
   public Pageable<Data> find(Address address) {
@@ -36,12 +59,13 @@ public class MMU {
   }
 
   public static class PTE {
+
     boolean valid;
     short ppn;
 
     public PTE(short value) {
-      this.valid = (value & 0x8000)>0;
-      this.ppn = (short) (value & ((1<<12)-1));
+      this.valid = (value & 0x8000) > 0;
+      this.ppn = (short) (value & ((1 << 12) - 1));
     }
   }
 }

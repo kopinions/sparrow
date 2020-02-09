@@ -10,6 +10,7 @@ public class Kernel {
   public static final int HDD_SIZE = 1024 * 1024;
   public static final int HDD_SWAP_SIZE = 64 * 1024;
   public static final int HDD_SYS_SIZE = 16 * 1024;
+  public static final int HDD_SWAP_ROOT = 0;
   public static final int HDD_FS_ROOT = HDD_SWAP_SIZE + HDD_SYS_SIZE;
   public static final int PGSHIFT = 9;
 }

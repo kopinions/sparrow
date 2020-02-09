@@ -1,5 +1,11 @@
 package com.kopinions.mm;
 
+import com.kopinions.Address;
+import com.kopinions.mm.Page.PageDirectory;
+
 public interface VMM {
-  void pgfault();
+
+  PageDirectory pgdir();
+
+  void pgfault(Address va);
 }

@@ -15,6 +15,10 @@ public class Proc implements Comparable<Proc> {
     return Integer.compare(this.priority, o.priority);
   }
 
+  public VMM vmm() {
+    return vmm;
+  }
+
   enum State {
     CREATED,
     READY,

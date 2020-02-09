@@ -31,6 +31,10 @@ public class Address {
     return addr == address.addr;
   }
 
+  public <T> T as() {
+    return (T) Integer.valueOf(addr);
+  }
+
   public static class Range {
     int start;
     int end;

@@ -11,11 +11,11 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class JobManager {
-
-  static Generator<Integer> generator = new IdGenerator();
+  private final IdGenerator generator;
   Queue<Job> jobs;
 
   public JobManager() {
+    this.generator = new IdGenerator();
     this.jobs = new LinkedBlockingQueue<>();
   }
 

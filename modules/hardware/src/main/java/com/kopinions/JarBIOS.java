@@ -22,8 +22,7 @@ public class JarBIOS implements BIOS {
 
   public JarBIOS() {
     bus = new SimpleBus(16);
-    MMU mmu = new MMU();
-    cpu = new SISD(mmu, bus);
+    cpu = new SISD(bus);
     interrupter = cpu.interrupter();
     rtc = new RTC(new Oscillator(), cpu.interrupter());
     cpu.poweron();

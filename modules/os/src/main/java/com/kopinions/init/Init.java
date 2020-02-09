@@ -1,21 +1,22 @@
 package com.kopinions.init;
 
-import static com.kopinions.mm.PageBasePMM.instance;
-
+import com.kopinions.Address;
 import com.kopinions.apps.monitors.Monitor;
 import com.kopinions.apps.monitors.Monitor.JsonChangeSet;
 import com.kopinions.core.CPU;
-import com.kopinions.core.CPU.Interrupter;
 import com.kopinions.core.CPU.Interrupter.Type;
 import com.kopinions.core.Disk;
 import com.kopinions.core.Memory;
+import com.kopinions.core.Registry.Name;
 import com.kopinions.fs.DevHDD;
 import com.kopinions.fs.FS.File;
+import com.kopinions.kernel.FifoSwap;
 import com.kopinions.kernel.JobManager;
 import com.kopinions.kernel.Kernel;
 import com.kopinions.kernel.Proc;
 import com.kopinions.kernel.ProcManager;
 import com.kopinions.kernel.Reporter;
+import com.kopinions.kernel.SwapManager;
 import com.kopinions.mm.PMM;
 import com.kopinions.mm.PageBasePMM;
 import java.nio.ByteBuffer;
@@ -27,18 +28,29 @@ public class Init implements Runnable {
   private final Memory memory;
   private final Disk disk;
   private CPU cpu;
+  private Monitor monitor;
+  private Reporter<Map<String, Object>> reporter;
+  private JobManager jobManager;
+  private DevHDD hdd;
+  private PMM pmm;
+  private SwapManager sm;
+  private ProcManager procManager;
 
   public Init(CPU cpu, Memory memory, Disk disk) {
     this.memory = memory;
     this.disk = disk;
-    Interrupter interrupter = cpu.interrupter();
     this.cpu = cpu;
-    interrupter.on(Type.RTC, new Runnable() {
-      @Override
-      public void run() {
-
+    monitor = new Monitor();
+    jobManager = new JobManager();
+    hdd = new DevHDD(disk);
+    pmm = new PageBasePMM(Kernel.MEM_USERSPACE_SIZE, Kernel.PAGE_SIZE);
+    sm = new FifoSwap(disk, pmm);
+    procManager = new ProcManager(elements -> new ArrayList<>() {{
+      Proc proc = elements.peek();
+      if (proc != null) {
+        add(proc);
       }
-    });
+    }}, pmm, sm);
   }
 
   @Override
@@ -46,18 +58,33 @@ public class Init implements Runnable {
     memory.memset(0, memory.size(), (byte) 0);
     // init the page descriptor
     // mov location, cr3
-
     // idleproc
-    Monitor target = new Monitor();
-
-    Reporter<Map<String, Object>> reporter = message -> {
-      target.apply(new JsonChangeSet("disk", message));
+    reporter = message -> {
+      monitor.apply(new JsonChangeSet("disk", message));
     };
 
-    new Thread(target).start();
-    JobManager jobManager = new JobManager();
+    new Thread(monitor).start();
+    loadJobs();
 
-    DevHDD hdd = new DevHDD(disk);
+    jobManager.report(reporter);
+
+    cpu.interrupter().on(Type.RTC, () -> {
+      if (procManager.current().scheduleNeeded()) {
+        try {
+          procManager.schedule();
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+    cpu.interrupter().on(Type.PGFAULT, () -> {
+      short va = cpu.registry().get(Name.CR2);
+      procManager.current().vmm().pgfault(new Address(va));
+    });
+  }
+
+  private void loadJobs() {
     File open = hdd.open(Kernel.HDD_SWAP_SIZE + Kernel.HDD_SYS_SIZE);
     byte[] read = open.read(512);
     ByteBuffer readdata = ByteBuffer.wrap(read);
@@ -72,27 +99,7 @@ public class Init implements Runnable {
       File job = hdd.open(location);
       byte[] jobdata = job.read(size);
       jobManager.create(location, size, jobdata);
+      job.close();
     }
-    ProcManager procManager = new ProcManager(elements -> new ArrayList<>() {{
-      Proc proc = elements.peek();
-      if (proc != null) {
-        add(proc);
-      }
-    }});
-    jobManager.report(reporter);
-    new Thread(() -> {
-      while (true) {
-        if (procManager.current().scheduleNeeded()) {
-          try {
-            procManager.schedule();
-            Thread.sleep(100);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-      }
-    }).start();
-
-    PMM pmm = instance(Kernel.MEM_USERSPACE_SIZE, Kernel.PAGE_SIZE);
   }
 }

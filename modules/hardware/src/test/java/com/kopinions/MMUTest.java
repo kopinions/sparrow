@@ -2,6 +2,7 @@ package com.kopinions;
 
 import com.kopinions.core.Bus;
 import com.kopinions.core.Memory;
+import com.kopinions.core.Registry.Name;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -13,11 +14,10 @@ class MMUTest {
     memory.memset(2, 3, (byte)0x80);
     memory.memset(3, 4, (byte)0x03);
     bus.attach(memory);
-    MMU mmu = new MMU();
-    SISD sisd = new SISD(mmu, bus);
-    sisd.execute(new MoveInstruction("cr3", (short) 0));
+    SISD sisd = new SISD(bus);
+    sisd.registry().set(Name.CR3, (short) 0);
     Address va = new Address(0x02FF);
-    Address pa = mmu.translate(va);
+    Address pa = sisd.mmu().translate(va);
     Assertions.assertEquals(pa, new Address(0x06FF));
   }
 }

@@ -1,26 +1,34 @@
 package com.kopinions.kernel;
 
+import com.kopinions.Address;
 import com.kopinions.kernel.Proc.State;
 import com.kopinions.mm.PMM;
 import com.kopinions.mm.Page;
 import com.kopinions.mm.PageBasePMM;
 import com.kopinions.mm.PageBasedVMM;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.stream.IntStream;
 
 public class ProcManager {
 
-  private Queue<Proc> ready;
   private Queue<Proc> created;
+  private Queue<Proc> ready;
   private Queue<Proc> running;
   private Queue<Proc> blocked;
   static Proc current;
   static Proc idle;
   private Selector<Proc> selector;
   private static Generator<Integer> ids = new IdGenerator();
+  private PMM pmm;
+  private SwapManager sm;
 
-  public ProcManager(Selector<Proc> procSelector) {
+  public ProcManager(Selector<Proc> procSelector, PMM pmm, SwapManager sm) {
     selector = procSelector;
+    this.pmm = pmm;
+    this.sm = sm;
     this.created = new PriorityQueue<>();
     this.ready = new PriorityQueue<>();
     this.running = new PriorityQueue<>();
@@ -36,14 +44,15 @@ public class ProcManager {
     proc.state = State.CREATED;
     proc.priority = job.priority;
     created.add(proc);
-    PMM instance = PageBasePMM.instance(Kernel.MEM_USERSPACE_SIZE, Kernel.PAGE_SIZE);
-    Page alloc = instance.alloc();
-    PageBasedVMM pageBasedVMM = new PageBasedVMM(alloc.pa());
-    proc.vmm = pageBasedVMM;
-
-    // create pdt for the current process
-    // create vmm for current process
-    // create swap manager for current process
+    Page alloc = pmm.alloc();
+    PageBasedVMM vmm = new PageBasedVMM(pmm, sm, alloc.pa());
+    proc.vmm = vmm;
+    Page code = vmm.pgdir().alloc(new Address(0));
+    List<Short> instructions = job.instructions();
+    int instructionSize = instructions.size();
+    ByteBuffer jobData = ByteBuffer.allocate(instructionSize * 2);
+    IntStream.range(0, instructionSize).forEach(i -> jobData.putShort(i*2, instructions.get(i)));
+    code.setData(jobData.array());
     return proc;
   }
 
