@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.kopinions.DRAM;
 import com.kopinions.kernel.Kernel;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,8 @@ class PageBasePMMTest {
 
   @BeforeEach
   void setUp() {
-    pmm = new PageBasePMM(16 * 1024, 512);
+    DRAM dram = new DRAM(Kernel.MEM_SIZE);
+    pmm = new PageBasePMM(dram, 16 * 1024, 512);
   }
 
   @Test

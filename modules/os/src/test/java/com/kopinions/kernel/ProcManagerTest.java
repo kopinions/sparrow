@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.kopinions.DRAM;
 import com.kopinions.HDD;
 import com.kopinions.mm.PageBasePMM;
 import java.nio.ByteBuffer;
@@ -16,8 +17,9 @@ class ProcManagerTest {
   @Test
   void should_able_to_create_proc_from_the_job() {
     HDD disk = new HDD(Kernel.HDD_SIZE);
-    PageBasePMM pmm = new PageBasePMM(Kernel.MEM_SIZE, Kernel.PAGE_SIZE);
-    FifoSwap sm = new FifoSwap(disk, pmm);
+    DRAM dram = new DRAM(Kernel.MEM_SIZE);
+    PageBasePMM pmm = new PageBasePMM(dram, Kernel.MEM_SIZE, Kernel.PAGE_SIZE);
+    FIFOSwap sm = new FIFOSwap(disk, pmm);
     ProcManager procManager = new ProcManager(new Selector<Proc>() {
       @Override
       public List<Proc> applied(Queue<Proc> elements) {

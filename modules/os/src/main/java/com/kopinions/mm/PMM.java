@@ -26,4 +26,8 @@ public interface PMM {
   PageTableEntry pde(Address pgdir, short la);
 
   PageTableEntry pte(PageDirectory pgdir, Address addr);
+
+  void write(int address, byte[] data);
+
+  void pageInsert(int pgdir, Page alloc, Address address);
 }

@@ -27,4 +27,5 @@ public class Job {
   public List<Short> instructions() {
     return instructions;
   }
+
 }

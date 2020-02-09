@@ -9,12 +9,12 @@ import com.kopinions.mm.Page;
 import com.kopinions.mm.Page.PageTable.PageTableEntry;
 import com.kopinions.mm.VMM;
 
-public class FifoSwap implements SwapManager {
+public class FIFOSwap implements SwapManager {
 
   private final SwapFS fs;
   private PMM pmm;
 
-  public FifoSwap(Disk disk, PMM pmm) {
+  public FIFOSwap(Disk disk, PMM pmm) {
     fs = new SwapFS(disk);
     this.pmm = pmm;
   }
@@ -50,8 +50,7 @@ public class FifoSwap implements SwapManager {
     PageTableEntry pte = pmm.pte(vmm.pgdir(), addr);
     File open = fs.open(addr.as());
     byte[] read = open.read(512);
-
-    result.setData(read);
+    pmm.write(result.pa(), read);
     return result;
   }
 }

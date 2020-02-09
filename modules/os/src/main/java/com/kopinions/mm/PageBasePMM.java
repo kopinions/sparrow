@@ -6,22 +6,27 @@ import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toList;
 
 import com.kopinions.Address;
+import com.kopinions.core.Memory;
 import com.kopinions.kernel.Kernel;
 import com.kopinions.mm.Page.PageDirectory;
 import com.kopinions.mm.Page.PageTable.PageTableEntry;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class PageBasePMM implements PMM {
 
+  private Memory memory;
   private final int size;
   private final int pagesize;
   List<Page> pages;
 
-  public PageBasePMM(int size, int pagesize) {
+  public PageBasePMM(Memory memory, int size, int pagesize) {
+    this.memory = memory;
     this.size = size;
     this.pagesize = pagesize;
-    pages = IntStream.range(0, size / pagesize).mapToObj(zone_num -> new Page(zone_num, this)).collect(toList());
+    pages = IntStream.range(0, size / pagesize)
+        .mapToObj(zone_num -> new Page(memory, zone_num, this)).collect(toList());
   }
 
   @Override
@@ -84,5 +89,22 @@ public class PageBasePMM implements PMM {
   @Override
   public PageTableEntry pte(PageDirectory pgdir, Address addr) {
     return null;
+  }
+
+  @Override
+  public void write(int address, byte[] data) {
+    ByteBuffer wrap = ByteBuffer.wrap(data);
+    for (int i = 0; i < data.length / 2; i++) {
+      Address address1 = new Address(i * 2 + address);
+      memory.write(address1, wrap.getShort(i * 2));
+    }
+  }
+
+  @Override
+  public void pageInsert(int pgdir, Page alloc, Address address) {
+    Address address1 = new Address(pgdir);
+    int pdx = address.pdx();
+    int ptx = address.ptx();
+    memory.write(new Address(pgdir + pdx * 2 + ptx * 2), (short) alloc.pa());
   }
 }

@@ -35,6 +35,27 @@ public class Address {
     return (T) Integer.valueOf(addr);
   }
 
+  // page directory index
+  // A linear address 'la' has a three-part structure as follows:
+//
+// +--------0------+-------7-------+---------9----------+
+// | Page Directory |   Page Table   | Offset within Page  |
+// |      Index     |     Index      |                     |
+// +----------------+----------------+---------------------+
+//  \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/
+//  \----------- PPN(la) -----------/
+  public int pdx() {
+    return (addr >> 16);
+  }
+
+  public int ptx() {
+    return (addr >> 9) & 0xFF;
+  }
+
+  public int pgoff() {
+    return addr & 0x01FF;
+  }
+
   public static class Range {
     int start;
     int end;

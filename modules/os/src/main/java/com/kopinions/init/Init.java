@@ -10,7 +10,7 @@ import com.kopinions.core.Memory;
 import com.kopinions.core.Registry.Name;
 import com.kopinions.fs.DevHDD;
 import com.kopinions.fs.FS.File;
-import com.kopinions.kernel.FifoSwap;
+import com.kopinions.kernel.FIFOSwap;
 import com.kopinions.kernel.JobManager;
 import com.kopinions.kernel.Kernel;
 import com.kopinions.kernel.Proc;
@@ -43,8 +43,8 @@ public class Init implements Runnable {
     monitor = new Monitor();
     jobManager = new JobManager();
     hdd = new DevHDD(disk);
-    pmm = new PageBasePMM(Kernel.MEM_USERSPACE_SIZE, Kernel.PAGE_SIZE);
-    sm = new FifoSwap(disk, pmm);
+    pmm = new PageBasePMM(memory, Kernel.MEM_USERSPACE_SIZE, Kernel.PAGE_SIZE);
+    sm = new FIFOSwap(disk, pmm);
     procManager = new ProcManager(elements -> new ArrayList<>() {{
       Proc proc = elements.peek();
       if (proc != null) {

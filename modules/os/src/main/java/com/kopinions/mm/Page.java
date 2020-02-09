@@ -1,8 +1,13 @@
 package com.kopinions.mm;
 
 import com.kopinions.Address;
+import com.kopinions.core.Memory;
 import com.kopinions.kernel.Kernel;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Page {
 
@@ -21,12 +26,14 @@ public class Page {
     FREE
   }
 
+  private Memory memory;
   int index;
   private PMM pmm;
   int size;
   Status status;
 
-  public Page(int index, PMM pmm) {
+  public Page(Memory memory, int index, PMM pmm) {
+    this.memory = memory;
     this.index = index;
     this.pmm = pmm;
     status = Status.FREE;
@@ -63,15 +70,21 @@ public class Page {
   }
 
   public byte[] data() {
-    return data;
+    List<Short> data = IntStream.range(0, 256).mapToObj(i -> memory.read(new Address(pa())))
+        .collect(Collectors.toList());
+    ByteBuffer allocate = ByteBuffer.allocate(512);
+    IntStream.range(0, 256).forEach(i -> allocate.putShort(i*2, data.get(i)));
+    return allocate.array();
   }
 
   public static class PageDirectory {
 
     private PMM pmm;
+    private int pgdir;
 
-    public PageDirectory(PMM pmm) {
+    public PageDirectory(PMM pmm, int pgdir) {
       this.pmm = pmm;
+      this.pgdir = pgdir;
     }
 
     public static class PageDirectoryEntry {
@@ -80,6 +93,7 @@ public class Page {
 
     public Page alloc(Address address) {
       Page alloc = pmm.alloc();
+      pmm.pageInsert(pgdir, alloc, address);
       // add page table entry to the page directory
       return alloc;
     }

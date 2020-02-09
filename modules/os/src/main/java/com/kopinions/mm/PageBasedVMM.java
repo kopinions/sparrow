@@ -18,7 +18,7 @@ public class PageBasedVMM implements VMM {
 
   @Override
   public PageDirectory pgdir() {
-    return new PageDirectory(pmm);
+    return new PageDirectory(pmm, pgdir);
   }
 
   @Override
