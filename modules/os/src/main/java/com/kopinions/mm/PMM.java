@@ -2,7 +2,6 @@ package com.kopinions.mm;
 
 import com.kopinions.Address;
 import com.kopinions.mm.Page.PageDirectory;
-import com.kopinions.mm.Page.PageDirectory.PageDirectoryEntry;
 import com.kopinions.mm.Page.PageTable.PageTableEntry;
 import java.util.List;
 

@@ -1,9 +1,7 @@
 package com.kopinions;
 
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
-import com.kopinions.MMU.PTE;
 import com.kopinions.core.Bus;
 import com.kopinions.core.CPU;
 import com.kopinions.core.Decoder;
@@ -14,20 +12,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 // Single Instruction Single Data
 public class SISD implements CPU {
-
-  short eip;
-  short esp;
-  short ebx;
-  short ecx;
-  short edx;
-  short esi;
-  short edi;
-  short ebp;
-  private short cr3;
   Decoder<Short> decoder;
   MMU mmu;
   private Bus bus;
@@ -88,8 +75,9 @@ public class SISD implements CPU {
   }
 
   private short fetch() {
+    short eip = registry.get(Name.EIP);
     Address translate = mmu.translate(new Address(eip));
-    this.eip += 2;
+    registry.set(Name.EIP, (short) (eip + 2));
     return bus.read(translate);
   }
 
@@ -101,7 +89,7 @@ public class SISD implements CPU {
 
   @Override
   public void poweron() {
-    eip = (short) 0;
+    registry.set(Name.EIP, (short) 0);
   }
 
   @Override
@@ -113,5 +101,4 @@ public class SISD implements CPU {
   public Registry registry() {
     return registry;
   }
-
 }
