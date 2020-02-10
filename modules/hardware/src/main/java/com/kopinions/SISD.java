@@ -27,6 +27,7 @@ public class SISD implements CPU {
     this.mmu.bus = bus;
     this.mmu.cpu = this;
     this.bus = bus;
+    this.decoder = new ISADecoder();
     interrupter = new Interrupter() {
       private Map<Type, List<Runnable>> isrs = new HashMap<>();
 

@@ -50,7 +50,7 @@ public class Init implements Runnable {
       if (proc != null) {
         add(proc);
       }
-    }}, pmm, sm);
+    }}, cpu, pmm, sm);
   }
 
   @Override
@@ -77,6 +77,8 @@ public class Init implements Runnable {
           e.printStackTrace();
         }
       }
+
+      procManager.tick();
     });
     cpu.interrupter().on(Type.PGFAULT, () -> {
       short va = cpu.registry().get(Name.CR2);

@@ -1,5 +1,7 @@
 package com.kopinions.mm;
 
+import static java.util.stream.IntStream.range;
+
 import com.kopinions.Address;
 import com.kopinions.core.Memory;
 import com.kopinions.kernel.Kernel;
@@ -7,14 +9,15 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Page {
 
   private byte[] data;
 
   public void setData(byte[] data) {
-    this.data = data;
+    ByteBuffer wrap = ByteBuffer.wrap(data);
+    range(0, data.length / 2).forEach(i ->
+        memory.write(new Address(pa() + i * 2), wrap.getShort(i * 2)));
   }
 
   public int pra_vaddr() {
@@ -70,10 +73,10 @@ public class Page {
   }
 
   public byte[] data() {
-    List<Short> data = IntStream.range(0, 256).mapToObj(i -> memory.read(new Address(pa())))
+    List<Short> data = range(0, 256).mapToObj(i -> memory.read(new Address(pa())))
         .collect(Collectors.toList());
     ByteBuffer allocate = ByteBuffer.allocate(512);
-    IntStream.range(0, 256).forEach(i -> allocate.putShort(i*2, data.get(i)));
+    range(0, 256).forEach(i -> allocate.putShort(i * 2, data.get(i)));
     return allocate.array();
   }
 
@@ -85,6 +88,10 @@ public class Page {
     public PageDirectory(PMM pmm, int pgdir) {
       this.pmm = pmm;
       this.pgdir = pgdir;
+    }
+
+    public short as() {
+      return (short)pgdir;
     }
 
     public static class PageDirectoryEntry {
@@ -100,6 +107,7 @@ public class Page {
   }
 
   public static class PageTable {
+
     public static class PageTableEntry {
 
     }

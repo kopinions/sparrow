@@ -19,6 +19,15 @@ public class Proc implements Comparable<Proc> {
     return vmm;
   }
 
+  public void tick() {
+    if (timeSlice > 0) {
+      timeSlice--;
+    }
+    if (timeSlice == 0) {
+      need_resched = true;
+    }
+  }
+
   enum State {
     CREATED,
     READY,
@@ -49,6 +58,7 @@ public class Proc implements Comparable<Proc> {
   int exitCode;
   int priority;
   Queue<Proc> processes;
+  int timeSlice;
 
 
   Proc(int pid) {
@@ -57,6 +67,7 @@ public class Proc implements Comparable<Proc> {
     state = State.READY;
     priority = 1;
     runs = 0;
+    timeSlice = 10;
   }
 
   void killed() {

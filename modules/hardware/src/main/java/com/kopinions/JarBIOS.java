@@ -44,7 +44,7 @@ public class JarBIOS implements BIOS {
           e.printStackTrace();
         }
       }
-    });
+    }).start();
     try {
       String bootClass = "com.kopinions.boot.Bootmain";
       Constructor<?> constructor = forName(bootClass)

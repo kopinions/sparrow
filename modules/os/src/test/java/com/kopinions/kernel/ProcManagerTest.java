@@ -6,6 +6,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.kopinions.DRAM;
 import com.kopinions.HDD;
+import com.kopinions.SISD;
+import com.kopinions.SimpleBus;
 import com.kopinions.mm.PageBasePMM;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -16,6 +18,7 @@ class ProcManagerTest {
 
   @Test
   void should_able_to_create_proc_from_the_job() {
+    SISD cpu = new SISD(new SimpleBus(16));
     HDD disk = new HDD(Kernel.HDD_SIZE);
     DRAM dram = new DRAM(Kernel.MEM_SIZE);
     PageBasePMM pmm = new PageBasePMM(dram, Kernel.MEM_SIZE, Kernel.PAGE_SIZE);
@@ -25,7 +28,7 @@ class ProcManagerTest {
       public List<Proc> applied(Queue<Proc> elements) {
         return asList(elements.peek());
       }
-    }, pmm, sm);
+    }, cpu, pmm, sm);
 
     JobManager jobManager = new JobManager();
     ByteBuffer allocate = ByteBuffer.allocate(12);

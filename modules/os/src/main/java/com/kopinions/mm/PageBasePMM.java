@@ -102,7 +102,6 @@ public class PageBasePMM implements PMM {
 
   @Override
   public void pageInsert(int pgdir, Page alloc, Address address) {
-    Address address1 = new Address(pgdir);
     int pdx = address.pdx();
     int ptx = address.ptx();
     memory.write(new Address(pgdir + pdx * 2 + ptx * 2), (short) alloc.pa());
