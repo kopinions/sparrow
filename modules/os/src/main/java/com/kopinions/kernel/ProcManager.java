@@ -1,5 +1,6 @@
 package com.kopinions.kernel;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 
 import com.kopinions.Address;
@@ -11,13 +12,14 @@ import com.kopinions.mm.PMM;
 import com.kopinions.mm.Page;
 import com.kopinions.mm.PageBasedVMM;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-public class ProcManager {
+public class ProcManager implements Report<Map<String, Object>>{
 
   private Queue<Proc> running;
   private Queue<Proc> blocked;
@@ -28,15 +30,12 @@ public class ProcManager {
   private CPU cpu;
   private PMM pmm;
   private SwapManager sm;
-  private Reporter<Map<String, Object>> reporter;
 
-  public ProcManager(Selector<Proc> procSelector, CPU cpu, PMM pmm, SwapManager sm,
-      Reporter<Map<String, Object>> reporter) {
+  public ProcManager(Selector<Proc> procSelector, CPU cpu, PMM pmm, SwapManager sm) {
     selector = procSelector;
     this.cpu = cpu;
     this.pmm = pmm;
     this.sm = sm;
-    this.reporter = reporter;
     this.running = new PriorityQueue<>();
     this.blocked = new PriorityQueue<>();
     idle = new Proc((short) 0);
@@ -69,11 +68,11 @@ public class ProcManager {
 
   void kill(Proc proc) {
     running.remove(proc);
+    proc.killed();
     current = idle;
   }
 
   public void exit(Proc proc) {
-    System.out.println(proc.pid() + " exit");
     running.remove(proc);
     proc.exited();
     current = idle;
@@ -81,10 +80,7 @@ public class ProcManager {
 
   public void active(Proc proc) {
     if (proc != current) {
-      System.out.println(proc.pid() + " active");
       current = proc;
-
-      // TODO change esp and preserve the context and switch to new process;
       cpu.registry().backup();
       cpu.registry().set(Name.EIP, current.context.eip);
       cpu.registry().set(Name.EBP, current.context.ebp);
@@ -103,10 +99,6 @@ public class ProcManager {
 
   public synchronized Proc current() {
     return current;
-  }
-
-  void report(Reporter<String> reporter) {
-    reporter.report("");
   }
 
   public Proc select(Selector<Proc> selector) {
@@ -141,5 +133,16 @@ public class ProcManager {
     } else {
       current.need_resched = true;
     }
+  }
+
+  @Override
+  public void report(Reporter<Map<String, Object>> reporter) {
+    Map<String, Object> status = new HashMap<>();
+    Map<Object, Object> running = new HashMap<>();
+    running.put("count", running.size());
+    running.put("ids", this.running.stream().map(Proc::pid).collect(toList()));
+    status.put("running", running);
+
+    reporter.report(status);
   }
 }

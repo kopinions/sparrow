@@ -18,6 +18,7 @@ import com.kopinions.kernel.JobManager;
 import com.kopinions.kernel.Kernel;
 import com.kopinions.kernel.Proc;
 import com.kopinions.kernel.ProcManager;
+import com.kopinions.kernel.Report;
 import com.kopinions.kernel.Reporter;
 import com.kopinions.kernel.Selector;
 import com.kopinions.kernel.SwapManager;
@@ -26,6 +27,7 @@ import com.kopinions.mm.PageBasePMM;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
 public class Init implements Runnable {
 
@@ -33,7 +35,6 @@ public class Init implements Runnable {
   private final Disk disk;
   private CPU cpu;
   private Monitor monitor;
-  private Reporter<Map<String, Object>> reporter;
   private JobManager jobManager;
   private DevHDD hdd;
   private PMM pmm;
@@ -44,12 +45,7 @@ public class Init implements Runnable {
     this.memory = memory;
     this.disk = disk;
     this.cpu = cpu;
-    reporter = new Reporter<Map<String, Object>>() {
-      @Override
-      public void report(Map<String, Object> message) {
-        monitor.apply(new JsonChangeSet("disk", message));
-      }
-    };
+
     monitor = new Monitor();
     jobManager = new JobManager();
     hdd = new DevHDD(disk);
@@ -60,7 +56,7 @@ public class Init implements Runnable {
       if (proc != null) {
         add(proc);
       }
-    }}, cpu, pmm, sm, reporter);
+    }}, cpu, pmm, sm);
   }
 
   @Override
@@ -68,8 +64,6 @@ public class Init implements Runnable {
     memory.memset(0, memory.size(), (byte) 0);
     new Thread(monitor).start();
     loadJobs();
-
-    jobManager.report(reporter);
 
     cpu.interrupter().on(Type.RTC, () -> {
       if (procManager.current().scheduleNeeded()) {
@@ -79,10 +73,8 @@ public class Init implements Runnable {
             procManager.active(select);
           } else {
             Selector<Job> FIFOSelector = elements -> asList(elements.poll());
-            Job single = jobManager.single(FIFOSelector);
-            if (single != null) {
-              procManager.create(single);
-            }
+            Optional<Job> single = jobManager.single(FIFOSelector);
+            single.ifPresent(job -> procManager.create(job));
           }
 
           procManager.schedule();
@@ -93,6 +85,14 @@ public class Init implements Runnable {
       }
 
       procManager.tick();
+    });
+
+    cpu.interrupter().on(Type.RTC, () -> {
+      procManager.report(message -> monitor.apply(new JsonChangeSet("proc", message)));
+      jobManager.report(message -> monitor.apply(new JsonChangeSet("job", message)));
+      hdd.report(message -> monitor.apply(new JsonChangeSet("disk_info", message)));
+      ((Report<Map<String, Object>>) pmm)
+          .report(message -> monitor.apply(new JsonChangeSet("mem_info", message)));
     });
     cpu.interrupter().on(Type.PGFAULT, () -> {
       short va = cpu.registry().get(Name.CR2);

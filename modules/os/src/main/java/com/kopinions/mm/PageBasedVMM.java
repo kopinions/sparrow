@@ -27,6 +27,7 @@ public class PageBasedVMM implements VMM {
 
   @Override
   public void pgfault(Address va) {
-
+    sm.out(this, 1);
+    sm.in(this, va);
   }
 }

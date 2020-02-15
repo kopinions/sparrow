@@ -10,7 +10,10 @@ import javax.swing.JPanel;
 
 public class Monitor implements Runnable {
 
-  private Map<String, Object> disk;
+  private Map<String, Object> disk_info;
+  private Map<String, Object> proc;
+  private Map<String, Object> job;
+  private Map<String, Object> mem_info;
 
   public Monitor() {
 
@@ -38,9 +41,11 @@ public class Monitor implements Runnable {
     f.setVisible(true);//making the frame visible
     while (true) {
       try {
-        String text = Json.toJson(disk);
-        System.out.println(text);
-        jLabel.setText(text);
+        System.out.println(Json.toJson(disk_info));
+        System.out.println(Json.toJson(mem_info));
+        System.out.println(Json.toJson(proc));
+        System.out.println(Json.toJson(job));
+        jLabel.setText(Json.toJson(disk_info));
         jLabel.setBounds(130, 200, 100, 40);
         f.validate();
         f.repaint();
@@ -52,7 +57,6 @@ public class Monitor implements Runnable {
   }
 
   public interface ChangeSet {
-
     void applied(Monitor m);
   }
 

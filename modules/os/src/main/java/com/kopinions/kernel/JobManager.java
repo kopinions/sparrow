@@ -7,10 +7,12 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class JobManager {
+public class JobManager implements Report<Map<String, Object>> {
+
   private final IdGenerator generator;
   Queue<Job> jobs;
 
@@ -41,15 +43,19 @@ public class JobManager {
 
   }
 
-
+  @Override
   public void report(Reporter<Map<String, Object>> reporter) {
-    reporter.report(new HashMap<String, Object>() {{
-      put("test", "test");
-    }});
+    HashMap<String, Object> job = new HashMap<>() {{
+      Map<String, Object> avail = new HashMap<>();
+      avail.put("count", jobs.size());
+      put("available", avail);
+    }};
+    reporter.report(job);
   }
 
-  public Job single(Selector<Job> selector) {
-    return selector.applied(jobs).stream().findFirst().orElse(null);
+  public Optional<Job> single(Selector<Job> selector) {
+    return selector.applied(jobs).stream().map(Optional::ofNullable).findFirst()
+        .orElse(Optional.empty());
   }
 
   public List<Job> select(Selector<Job> selector) {

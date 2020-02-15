@@ -28,7 +28,7 @@ class ProcManagerTest {
       public List<Proc> applied(Queue<Proc> elements) {
         return asList(elements.peek());
       }
-    }, cpu, pmm, sm, reporter);
+    }, cpu, pmm, sm);
 
     JobManager jobManager = new JobManager();
     ByteBuffer allocate = ByteBuffer.allocate(12);

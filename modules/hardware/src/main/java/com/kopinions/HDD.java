@@ -49,6 +49,11 @@ public class HDD implements Disk {
   }
 
   @Override
+  public int size() {
+    return size;
+  }
+
+  @Override
   public void attached(Bus bus) {
 
   }

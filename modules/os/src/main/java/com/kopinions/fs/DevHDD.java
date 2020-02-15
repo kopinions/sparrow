@@ -4,9 +4,13 @@ import com.kopinions.core.Disk;
 import com.kopinions.fs.FS.File.Operation;
 import com.kopinions.fs.FS.File.Status;
 import com.kopinions.kernel.Kernel;
+import com.kopinions.kernel.Report;
+import com.kopinions.kernel.Reporter;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
-public class DevHDD implements FS {
+public class DevHDD implements FS, Report<Map<String, Object>> {
 
   private final Operations operations;
   private Disk disk;
@@ -42,6 +46,13 @@ public class DevHDD implements FS {
   @Override
   public File root() {
     return new File(Kernel.HDD_FS_ROOT, operations);
+  }
+
+  @Override
+  public void report(Reporter<Map<String, Object>> reporter) {
+    HashMap<String, Object> message = new HashMap<>();
+    message.put("size", disk.size());
+    reporter.report(message);
   }
 
   private class WriteOperation implements Operation<Void> {

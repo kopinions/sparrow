@@ -8,13 +8,17 @@ import static java.util.stream.Collectors.toList;
 import com.kopinions.Address;
 import com.kopinions.core.Memory;
 import com.kopinions.kernel.Kernel;
+import com.kopinions.kernel.Report;
+import com.kopinions.kernel.Reporter;
 import com.kopinions.mm.Page.PageDirectory;
 import com.kopinions.mm.Page.PageTable.PageTableEntry;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
-public class PageBasePMM implements PMM {
+public class PageBasePMM implements PMM, Report<Map<String, Object>> {
 
   private Memory memory;
   private final int size;
@@ -118,5 +122,14 @@ public class PageBasePMM implements PMM {
   public void pgremove(int pgdir) {
     IntStream.range(0, 256).forEach(i -> memory.write(new Address(pgdir + i * 2), (short) 0x0));
     free(from((short) pgdir));
+  }
+
+  @Override
+  public void report(Reporter<Map<String, Object>> reporter) {
+    HashMap<String, Object> message = new HashMap<>();
+    message.put("total", size);
+    message.put("pages", pages.size());
+    reporter.report(message);
+
   }
 }
