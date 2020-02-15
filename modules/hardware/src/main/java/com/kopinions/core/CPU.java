@@ -15,7 +15,7 @@ public interface CPU {
 
   interface Interrupter {
     enum Type {
-      RTC, PGFAULT,
+      RTC, PGFAULT, SWITCH;
     }
     void interrupt(Type type);
 

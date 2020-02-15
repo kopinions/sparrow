@@ -49,6 +49,17 @@ public class SISD implements CPU {
         put(Name.CR2, (short) 0);
         put(Name.CR3, (short) 0);
         put(Name.EIP, (short) 0);
+        put(Name.EBP, (short) 0);
+        put(Name.EDI, (short) 0);
+      }};
+
+      Map<Name, Short> backup = new HashMap<>() {{
+        put(Name.CR1, (short) 0);
+        put(Name.CR2, (short) 0);
+        put(Name.CR3, (short) 0);
+        put(Name.EIP, (short) 0);
+        put(Name.EBP, (short) 0);
+        put(Name.EDI, (short) 0);
       }};
 
       @Override
@@ -59,6 +70,16 @@ public class SISD implements CPU {
       @Override
       public synchronized void set(Name name, short value) {
         registry.put(name, value);
+      }
+
+      @Override
+      public void backup() {
+        backup.putAll(registry);
+      }
+
+      @Override
+      public void restore() {
+        registry.putAll(backup);
       }
     };
   }

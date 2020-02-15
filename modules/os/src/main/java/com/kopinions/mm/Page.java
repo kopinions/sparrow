@@ -6,6 +6,7 @@ import com.kopinions.Address;
 import com.kopinions.core.Memory;
 import com.kopinions.kernel.Kernel;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,6 +41,10 @@ public class Page {
     this.index = index;
     this.pmm = pmm;
     status = Status.FREE;
+  }
+
+  public int ppn() {
+    return index;
   }
 
   public boolean is(Status expected) {
@@ -84,14 +89,22 @@ public class Page {
 
     private PMM pmm;
     private int pgdir;
+    private List<Page> allocated;
 
     public PageDirectory(PMM pmm, int pgdir) {
       this.pmm = pmm;
       this.pgdir = pgdir;
+      allocated = new ArrayList<>();
     }
 
     public short as() {
-      return (short)pgdir;
+      return (short) pgdir;
+    }
+
+    public void free(Address address) {
+      allocated.forEach(p -> pmm.free(p));
+      allocated = new ArrayList<>();
+      pmm.pgremove(pgdir);
     }
 
     public static class PageDirectoryEntry {
@@ -101,7 +114,7 @@ public class Page {
     public Page alloc(Address address) {
       Page alloc = pmm.alloc();
       pmm.pageInsert(pgdir, alloc, address);
-      // add page table entry to the page directory
+      allocated.add(alloc);
       return alloc;
     }
   }

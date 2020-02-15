@@ -27,6 +27,8 @@ public class JobManager {
     job.instructions = range(0, (size - 8) / 2)
         .mapToObj(i -> jobBufer.getShort(8 + i * 2))
         .collect(toList());
+    job.instructions.remove((size - 8) / 2 - 1);
+    job.instructions.add((short) 0xFF);
     jobs.add(job);
     return job;
   }

@@ -1,5 +1,7 @@
 package com.kopinions.init;
 
+import static java.util.Arrays.asList;
+
 import com.kopinions.Address;
 import com.kopinions.apps.monitors.Monitor;
 import com.kopinions.apps.monitors.Monitor.JsonChangeSet;
@@ -11,11 +13,13 @@ import com.kopinions.core.Registry.Name;
 import com.kopinions.fs.DevHDD;
 import com.kopinions.fs.FS.File;
 import com.kopinions.kernel.FIFOSwap;
+import com.kopinions.kernel.Job;
 import com.kopinions.kernel.JobManager;
 import com.kopinions.kernel.Kernel;
 import com.kopinions.kernel.Proc;
 import com.kopinions.kernel.ProcManager;
 import com.kopinions.kernel.Reporter;
+import com.kopinions.kernel.Selector;
 import com.kopinions.kernel.SwapManager;
 import com.kopinions.mm.PMM;
 import com.kopinions.mm.PageBasePMM;
@@ -40,6 +44,12 @@ public class Init implements Runnable {
     this.memory = memory;
     this.disk = disk;
     this.cpu = cpu;
+    reporter = new Reporter<Map<String, Object>>() {
+      @Override
+      public void report(Map<String, Object> message) {
+        monitor.apply(new JsonChangeSet("disk", message));
+      }
+    };
     monitor = new Monitor();
     jobManager = new JobManager();
     hdd = new DevHDD(disk);
@@ -50,19 +60,12 @@ public class Init implements Runnable {
       if (proc != null) {
         add(proc);
       }
-    }}, cpu, pmm, sm);
+    }}, cpu, pmm, sm, reporter);
   }
 
   @Override
   public void run() {
     memory.memset(0, memory.size(), (byte) 0);
-    // init the page descriptor
-    // mov location, cr3
-    // idleproc
-    reporter = message -> {
-      monitor.apply(new JsonChangeSet("disk", message));
-    };
-
     new Thread(monitor).start();
     loadJobs();
 
@@ -71,6 +74,17 @@ public class Init implements Runnable {
     cpu.interrupter().on(Type.RTC, () -> {
       if (procManager.current().scheduleNeeded()) {
         try {
+          Proc select = procManager.select(elements -> asList(elements.poll()));
+          if (select != null) {
+            procManager.active(select);
+          } else {
+            Selector<Job> FIFOSelector = elements -> asList(elements.poll());
+            Job single = jobManager.single(FIFOSelector);
+            if (single != null) {
+              procManager.create(single);
+            }
+          }
+
           procManager.schedule();
           Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -83,6 +97,10 @@ public class Init implements Runnable {
     cpu.interrupter().on(Type.PGFAULT, () -> {
       short va = cpu.registry().get(Name.CR2);
       procManager.current().vmm().pgfault(new Address(va));
+    });
+    cpu.interrupter().on(Type.SWITCH, () -> {
+      short pid = cpu.registry().get(Name.EDI);
+      procManager.exit(procManager.id(pid));
     });
   }
 

@@ -8,6 +8,10 @@ public class ISADecoder implements Decoder<Short> {
 
   @Override
   public Instruction decode(Short inst) {
-    return new InterruptInstruction();
+    if (inst == 0xFF) {
+      return new ReturnInstruction();
+    } else {
+      return new InterruptInstruction();
+    }
   }
 }

@@ -64,8 +64,8 @@ public class MMU {
     short ppn;
 
     public PTE(short value) {
-      this.valid = (value & 0x8000) > 0;
-      this.ppn = (short) (value & ((1 << 12) - 1));
+      this.valid = (value & 0x1) > 0;
+      this.ppn = (short) ((value & 0xFFFE) >> 9);
     }
   }
 }

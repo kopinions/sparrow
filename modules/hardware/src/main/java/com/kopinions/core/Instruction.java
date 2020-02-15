@@ -12,7 +12,7 @@ public interface Instruction {
   List<Operand> operands();
 
   enum Operation {
-  SYSCALL, USER_MODE, IO, MOVE
+  SYSCALL, USER_MODE, IO, MOVE, RET
   }
 
   int cycle();

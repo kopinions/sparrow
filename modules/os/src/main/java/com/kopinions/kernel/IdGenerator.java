@@ -1,10 +1,10 @@
 package com.kopinions.kernel;
 
-public class IdGenerator implements Generator<Integer> {
-  int counter = 0;
+public class IdGenerator implements Generator<Short> {
+  short counter = 0;
 
   @Override
-  public synchronized Integer generate() {
+  public synchronized Short generate() {
     return ++counter;
   }
 }

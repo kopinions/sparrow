@@ -9,6 +9,7 @@ public class PageBasedVMM implements VMM {
   private SwapManager sm;
   int pgdir;
   private PMM pmm;
+  private PageDirectory directory;
 
   public PageBasedVMM(PMM pmm, SwapManager sm, int pgdir) {
     this.pmm = pmm;
@@ -18,7 +19,10 @@ public class PageBasedVMM implements VMM {
 
   @Override
   public PageDirectory pgdir() {
-    return new PageDirectory(pmm, pgdir);
+    if (directory == null) {
+       directory = new PageDirectory(pmm, pgdir);
+    }
+    return directory;
   }
 
   @Override

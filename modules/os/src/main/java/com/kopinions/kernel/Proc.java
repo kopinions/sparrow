@@ -1,5 +1,7 @@
 package com.kopinions.kernel;
 
+import com.kopinions.Address;
+import com.kopinions.mm.Page.PageDirectory;
 import com.kopinions.mm.VMM;
 import java.util.Objects;
 import java.util.Queue;
@@ -28,6 +30,10 @@ public class Proc implements Comparable<Proc> {
     }
   }
 
+  public short pid() {
+    return pid;
+  }
+
   enum State {
     CREATED,
     READY,
@@ -36,8 +42,7 @@ public class Proc implements Comparable<Proc> {
     TERMINATED,
   }
 
-  class Context {
-
+  static class Context {
     public short eip;
     public short esp;
     public short ebx;
@@ -49,7 +54,7 @@ public class Proc implements Comparable<Proc> {
   }
 
   State state;
-  int pid;
+  short pid;
   int runs;
   VMM vmm;
   Context context;
@@ -61,13 +66,13 @@ public class Proc implements Comparable<Proc> {
   int timeSlice;
 
 
-  Proc(int pid) {
+  Proc(short pid) {
     this.pid = pid;
     need_resched = false;
     state = State.READY;
     priority = 1;
     runs = 0;
-    timeSlice = 10;
+    timeSlice = 1000;
   }
 
   void killed() {
@@ -79,6 +84,11 @@ public class Proc implements Comparable<Proc> {
 
   void awakened() {
     this.state = State.RUNNING;
+  }
+
+  void exited() {
+    PageDirectory pgdir = vmm.pgdir();
+    pgdir.free(new Address(pgdir.as()));
   }
 
   @Override

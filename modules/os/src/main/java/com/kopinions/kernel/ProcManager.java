@@ -1,18 +1,21 @@
 package com.kopinions.kernel;
 
+import static java.util.stream.IntStream.range;
+
 import com.kopinions.Address;
 import com.kopinions.core.CPU;
 import com.kopinions.core.Registry.Name;
+import com.kopinions.kernel.Proc.Context;
 import com.kopinions.kernel.Proc.State;
 import com.kopinions.mm.PMM;
 import com.kopinions.mm.Page;
-import com.kopinions.mm.PageBasePMM;
 import com.kopinions.mm.PageBasedVMM;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.stream.IntStream;
 
 public class ProcManager {
 
@@ -21,60 +24,81 @@ public class ProcManager {
   static Proc current;
   static Proc idle;
   private Selector<Proc> selector;
-  private static Generator<Integer> ids = new IdGenerator();
+  private static Generator<Short> ids = new IdGenerator();
   private CPU cpu;
   private PMM pmm;
   private SwapManager sm;
+  private Reporter<Map<String, Object>> reporter;
 
-  public ProcManager(Selector<Proc> procSelector, CPU cpu, PMM pmm, SwapManager sm) {
+  public ProcManager(Selector<Proc> procSelector, CPU cpu, PMM pmm, SwapManager sm,
+      Reporter<Map<String, Object>> reporter) {
     selector = procSelector;
     this.cpu = cpu;
     this.pmm = pmm;
     this.sm = sm;
+    this.reporter = reporter;
     this.running = new PriorityQueue<>();
     this.blocked = new PriorityQueue<>();
-    idle = new Proc(0);
+    idle = new Proc((short) 0);
     idle.need_resched = true;
     idle.awakened();
     current = idle;
   }
 
-  Proc create(Job job) {
+  public Proc create(Job job) {
     Proc proc = new Proc(ids.generate());
-    proc.state = State.CREATED;
+    proc.state = State.RUNNING;
     proc.priority = job.priority;
+    proc.context = new Context();
     running.add(proc);
     Page alloc = pmm.alloc();
     PageBasedVMM vmm = new PageBasedVMM(pmm, sm, alloc.pa());
     proc.vmm = vmm;
     Page code = vmm.pgdir().alloc(new Address(0));
+    proc.context.eip = 0;
+    proc.context.ebp = (short) code.pa();
+    proc.context.edi = proc.pid();
     List<Short> instructions = job.instructions();
     int instructionSize = instructions.size();
     ByteBuffer jobData = ByteBuffer.allocate(instructionSize * 2);
-    IntStream.range(0, instructionSize).forEach(i -> jobData.putShort(i*2, instructions.get(i)));
+    range(0, instructionSize).forEach(i -> jobData.putShort(i * 2, instructions.get(i)));
     code.setData(jobData.array());
     active(proc);
     return proc;
   }
 
   void kill(Proc proc) {
-
+    running.remove(proc);
+    current = idle;
   }
 
-  void active(Proc proc) {
+  public void exit(Proc proc) {
+    System.out.println(proc.pid() + " exit");
+    running.remove(proc);
+    proc.exited();
+    current = idle;
+  }
+
+  public void active(Proc proc) {
     if (proc != current) {
+      System.out.println(proc.pid() + " active");
       current = proc;
 
       // TODO change esp and preserve the context and switch to new process;
+      cpu.registry().backup();
       cpu.registry().set(Name.EIP, current.context.eip);
+      cpu.registry().set(Name.EBP, current.context.ebp);
       cpu.registry().set(Name.CR3, current.vmm.pgdir().as());
+      cpu.registry().set(Name.EDI, proc.pid());
       proc.awakened();
     }
   }
 
-  Proc id(int id) {
-    return null;
-
+  public Proc id(short id) {
+    if (id == 0) {
+      return idle;
+    }
+    return running.stream().filter(r -> r.pid() == id).findFirst().orElse(null);
   }
 
   public synchronized Proc current() {
@@ -85,8 +109,10 @@ public class ProcManager {
     reporter.report("");
   }
 
-  private Proc select(Selector<Proc> selector) {
-    return selector.applied(running).stream().findFirst().orElse(null);
+  public Proc select(Selector<Proc> selector) {
+    Optional<Proc> proc = selector.applied(running).stream().map(i -> Optional.ofNullable(i))
+        .findFirst().orElse(Optional.ofNullable(null));
+    return proc.orElse(null);
   }
 
   public synchronized void schedule() {
@@ -112,8 +138,7 @@ public class ProcManager {
   public void tick() {
     if (current != idle) {
       current.tick();
-    }
-    else {
+    } else {
       current.need_resched = true;
     }
   }

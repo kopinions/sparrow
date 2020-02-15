@@ -30,4 +30,8 @@ public interface PMM {
   void write(int address, byte[] data);
 
   void pageInsert(int pgdir, Page alloc, Address address);
+
+  void pageRemove(int pgdir, Address la);
+
+  void pgremove(int pgdir);
 }

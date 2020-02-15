@@ -57,7 +57,7 @@ public class PageBasePMM implements PMM {
 
   @Override
   public void free(Page page) {
-    page.status = FREE;
+    pages.stream().filter(p -> p.index == page.index).forEach(p -> p.status = FREE);
   }
 
   @Override
@@ -104,6 +104,19 @@ public class PageBasePMM implements PMM {
   public void pageInsert(int pgdir, Page alloc, Address address) {
     int pdx = address.pdx();
     int ptx = address.ptx();
-    memory.write(new Address(pgdir + pdx * 2 + ptx * 2), (short) alloc.pa());
+    memory
+        .write(new Address(pgdir + pdx * 2 + ptx * 2), (short) ((short) alloc.pa() | (short) 0x1));
+  }
+
+  @Override
+  public void pageRemove(int pgdir, Address la) {
+    memory.write(new Address(pgdir + la.ptx() * 2), (short) 0x0);
+    free(from(la.as()));
+  }
+
+  @Override
+  public void pgremove(int pgdir) {
+    IntStream.range(0, 256).forEach(i -> memory.write(new Address(pgdir + i * 2), (short) 0x0));
+    free(from((short) pgdir));
   }
 }
